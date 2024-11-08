@@ -6,7 +6,7 @@ contract SubastaEnzoVinella {
     uint256 startTime;
     uint256 endTime;
     uint256 duration;
-    uint256 highestBid;
+    uint256 public highestBid;
     bool isActive;
     address highestBidder;
     uint256 private startingPrice;
@@ -43,18 +43,18 @@ contract SubastaEnzoVinella {
         startTime = block.timestamp;
         duration = _duration;
         owner = msg.sender;
-        highestBid = _startingPrice;
-        startingPrice = _startingPrice;
+        highestBid = _startingPrice * 1 ether;//CONVIERTO WEI A ETH
+        startingPrice = _startingPrice * 1 ether; //CONVIERTO WEI A ETH
         isActive = true;
         highestBidder = msg.sender;
         endTime = block.timestamp + _duration;
     }
 
     function bid() external payable IsActive {
-        require(
-            msg.value >= (highestBid * 105) / 100,
-            "Su oferta debe ser al menos 5% mayor que la actual"
-        );
+            require(
+                msg.value > (highestBid * 105) / 100,
+                "Su oferta debe ser al menos un 5% mayor que la actual"
+            );
         deposits[msg.sender] += msg.value;
         bids[msg.sender] = msg.value;
         highestBid = msg.value;
@@ -107,5 +107,10 @@ contract SubastaEnzoVinella {
                 _bidder.transfer(_monto);
             }
         }
+    }
+
+    function cerrarSubasta() external OnlyOwner IsActive{
+            isActive = false;
+            emit SubastaFinalizada(highestBidder, highestBid);
     }
 }
